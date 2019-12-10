@@ -12,14 +12,14 @@ const urlDatabase = {
   '7digw6': 'http://www.shanti-enterprises.com'
 };
 
-app.get('/hello', (req, res) => {      // root route
-  let templateVars = { greeting: 'Hello World!'};
-  res.render("hello_word", templateVars);
+app.get("/hello", (req, res) => {
+  let templateVars = { greeting: 'Hello World!' };
+  res.render("hello_world", templateVars);
 });
 
-app.get('/urls', (req, ren) => {
+app.get("/urls", (req, ren) => {
   let templateVars = { urls: urlDatabase };
-  res.render('urls_index', templateVars);
+  ren.render("urls_index", templateVars);
 });
 
 app.get('/urls.json', (req, res) => {
