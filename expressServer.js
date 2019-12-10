@@ -1,22 +1,34 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
 
 // set the view engine to ejs  ****
 app.set('view engine', 'ejs');
 
-function generateRandomString() {
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
 
+
+function generateRandomString(outputLength) {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+
+  for (let i = 0; i < outputLength; i ++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  console.log("six digit code: ", result);
+  return result;
 }
 
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9ssh3u': 'http://www.google.com',
-  '7digw6': 'http://www.shanti-enterprises.com'
 };
+
+// const bodyParser = require("body-parser");
+// app.use(bodyParser.urlencoded({extended: true}));
 
 app.get("/hello", (req, res) => {
   let templateVars = { greeting: 'Hello World!' };
@@ -34,7 +46,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  res.send(generateRandomString(6));         // Respond with 'Ok' (we will replace this)
 });
 
 app.get('/urls.json', (req, res) => {
