@@ -12,16 +12,27 @@ const urlDatabase = {
   '7digw6': 'http://www.shanti-enterprises.com'
 };
 
-app.get('/', (req, res) => {      // root route
-  res.send("Hello World");
+app.get('/hello', (req, res) => {      // root route
+  let templateVars = { greeting: 'Hello World!'};
+  res.render("hello_word", templateVars);
+});
+
+app.get('/urls', (req, ren) => {
+  let templateVars = { urls: urlDatabase };
+  res.render('urls_index', templateVars);
 });
 
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hello', (req, res) => {
+app.get('/hell', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: 'http://www.google.com' };
+  res.render("urls_show", templateVars);
 });
 
 app.listen(PORT, () => {
