@@ -17,9 +17,10 @@ function generateRandomString(outputLength) {
   for (let i = 0; i < outputLength; i ++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
-  console.log("six digit code: ", result);
+  //console.log("six digit code: ", result);
   return result;
 }
+
 
 
 const urlDatabase = {
@@ -46,7 +47,11 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send(generateRandomString(6));         // Respond with 'Ok' (we will replace this)
+  let newShortUrl = generateRandomString(6)
+  console.log('Short URL: ', newShortUrl)
+  //res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
+  res.redirect(`http://localhost:8080/urls/${newShortUrl}`)
+  urlDatabase[newShortUrl] = 'http://' +req.body.longURL;
 });
 
 app.get('/urls.json', (req, res) => {
@@ -58,8 +63,15 @@ app.get('/hell', (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: 'http://www.google.com' };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  // const longURL = ...
+  short = req.params.shortURL;
+  longURL = urlDatabase[short];
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
