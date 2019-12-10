@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 
-function generateRandomString(outputLength) {
+const generateRandomString = function(outputLength) {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -19,7 +19,7 @@ function generateRandomString(outputLength) {
   }
   //console.log("six digit code: ", result);
   return result;
-}
+};
 
 
 
@@ -28,8 +28,7 @@ const urlDatabase = {
   '9ssh3u': 'http://www.google.com',
 };
 
-// const bodyParser = require("body-parser");
-// app.use(bodyParser.urlencoded({extended: true}));
+ //// get requests starts from here ...------>>>>
 
 app.get("/hello", (req, res) => {
   let templateVars = { greeting: 'Hello World!' };
@@ -43,15 +42,6 @@ app.get("/urls", (req, ren) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
-});
-
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  let newShortUrl = generateRandomString(6)
-  console.log('Short URL: ', newShortUrl)
-  //res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
-  res.redirect(`http://localhost:8080/urls/${newShortUrl}`)
-  urlDatabase[newShortUrl] = 'http://' +req.body.longURL;
 });
 
 app.get('/urls.json', (req, res) => {
@@ -69,11 +59,43 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   // const longURL = ...
-  short = req.params.shortURL;
-  longURL = urlDatabase[short];
+  let short = req.params.shortURL;
+  let longURL = urlDatabase[short];
   res.redirect(longURL);
 });
 
+
+//// post requests starts from here...***>>>>>>>
+
+app.post("/urls", (req, res) => {
+  let newShortUrl = generateRandomString(6);
+  res.redirect(`http://localhost:8080/urls/${newShortUrl}`);
+  urlDatabase[newShortUrl] = 'http://' + req.body.longURL;
+});
+
+// delete a tiny url from database ---->>>>>
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
+})
+
+// edit a tiny url from database ---->>>>>
+app.post("/urls/:shortURL/edit", (req, res) => {
+  let shortUrl = req.params.shortURL
+  console.log('Edit: ', req.params.shortURL);
+  res.redirect(`/urls/${shortUrl}`);
+})
+
+
+// update button on the tine url show page ----->>>>
+app.post("/urls/:shortURL/update", (req, res) => {
+  let longUrl = req.body.editURL
+  urlDatabase[req.params.shortURL] = longUrl;
+  res.redirect('/urls');
+})
+
+
+///// listen command fof port ------>>>>>>>>>
 app.listen(PORT, () => {
-  console.log(`Example app listening to port ${PORT}!`)
+  console.log(`Example app listening to port ${PORT}!`);
 });
