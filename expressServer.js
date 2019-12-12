@@ -179,22 +179,6 @@ app.post("/login", (req, res) => {
   } else { // no user found
     res.status(403).send("user no findy!")
   }
-  // for (let user in users) {
-  //   let mail = users[user].email;
-  //   let password1 = users[user].password;
-  //   let nameOfUser = users[user].username;
-  // //emailLookupFromServer();
-  //   if (email === mail && pass === password1) {
-  //     res.cookie('username', nameOfUser);
-  //     res.redirect("/urls");
-  //   } else {
-  //     let templateVars = {
-  //       username: req.cookies["username"],
-  //       loginFailed: true
-  //     };
-  //     res.render("sign_in", templateVars);
-  //   }
-  // }
 });
 
 //// logging out ----->>>>>
