@@ -13,6 +13,8 @@ app.set('view engine', 'ejs');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+////// initialising B crypt ---->>>>
+const bcrypt = require('bcrypt');
 
 // users data  *******------->>>>
 const users = {};
@@ -213,7 +215,7 @@ app.post("/login", (req, res) => {
 
   if (userFound) {
     console.log('pass', pass);
-    if (userFound.password === pass) {
+    if (bcrypt.compareSync(pass, userFound.password)) {
       res.cookie('username', userFound.username);
       res.redirect("/urls/new");
     } else {
@@ -237,7 +239,8 @@ app.post("/urls/register", (req, res) => {
   let randomId = generateRandomString(4);
   let userName = req.body.username;
   let email = req.body.email;
-  let password = req.body.password;
+  let password = bcrypt.hashSync(req.body.password, 10);
+  //const hashedPassword = bcrypt.hashSync(password, 10);
   console.log('username: ', userName, 'email: ', email, 'password: ', password);
   //// LOOPING through the emails in server
   for (user in users) {
@@ -258,7 +261,9 @@ app.post("/urls/register", (req, res) => {
   };
   res.cookie('username', userName);
   res.redirect('/urls/new');
+  console.log('users in database ------->>>>', users);
 });
+
 
 
 
