@@ -2,12 +2,9 @@ const express = require('express');
 const app = express();
 const PORT = 8080;
 require('./helpers');
+
 ///// cookie encriptor  ----->>>>>
 const cookieSession = require('cookie-session');
-
-/// setting cookies ----->>>>
-// let cookieParser = require('cookie-parser');
-// app.use(cookieParser());
 
 // set the view engine to ejs  ****
 app.set('view engine', 'ejs');
@@ -16,7 +13,7 @@ app.set('view engine', 'ejs');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-////// initialising B crypt ---->>>>
+////// initializing B crypt ---->>>>
 const bcrypt = require('bcrypt');
 
 // users data  *******------->>>>
@@ -32,7 +29,7 @@ app.use(cookieSession({
 }));
 
 
-///// generate randon string function  ------>>>>>
+///// generate random string function  ------>>>>>
 const generateRandomString = function(outputLength) {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -55,11 +52,9 @@ function findUser(email) {
 
 //// function to match url with the user id ------->>
 function urlsForUser(id) {
-  console.log("what is Id in urlsForUser", id);
+
   for (let shortURL in urlDatabase) {
-    console.log("shortURL is =>", shortURL);
     if (urlDatabase[shortURL].username === id) {
-      console.log("username is =>", urlDatabase[shortURL].username);
       return urlDatabase[shortURL];
     }
   }
@@ -70,11 +65,8 @@ function urlsForUser(id) {
 /////   getting urls for specific user   --------->>
 function geturls(id) {
   let urls = {};
-  console.log("what is Id in urlsForUser", id);
   for (let shortURL in urlDatabase) {
-    console.log("shortURL is =>", shortURL);
     if (urlDatabase[shortURL].username === id) {
-      console.log("username is =>", urlDatabase[shortURL].username);
       urls[shortURL] = urlDatabase[shortURL];
     }
   }
@@ -99,16 +91,15 @@ app.get("/hello", (req, res) => {
 
 ///// urls page
 app.get("/urls", (req, res) => {
-  //console.log(req.cookies.username);
   const username = req.session.username;
   const geturl = geturls(username);
-  console.log('urls logedin person ----->>>>>> ', geturl);
   let templateVars = {
     urls: geturl,
     // longURL: urlDatabase,
     username: req.session["username"]
   };
-    // showing url only if user is signed in ----->>>
+
+  // showing url only if user is signed in ----->>>
   if (req.session["username"] && urlsForUser(username) && urlsForUser(username).username === req.session.username) {
     longURL = urlsForUser(username).longURL;
     res.render("urls_index", templateVars);
@@ -135,14 +126,6 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hell', (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    username: req.session["username"]
-  };
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-  res.render(templateVars);
-});
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
@@ -153,10 +136,12 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//// redirecting long url ------->>>>>>>>
 app.get("/u/:shortURL", (req, res) => {
   let short = req.params.shortURL;
-  console.log('SHORTYYYYYYYYY --------->>>>>>>>>>>>', short);
-  let longURL = urlDatabase[short].longURL;
+  console.log('short url ----->>>>', short);
+  let longURL =  urlDatabase[short].longURL;
+  console.log('longurl ------->>>', longURL);
   res.redirect(longURL);
 });
 
@@ -191,7 +176,6 @@ app.post("/urls", (req, res) => {
   urlDatabase[newShortUrl].username = username;
   urlDatabase[newShortUrl].longURL = 'http://' + req.body.longURL;
   res.redirect(`http://localhost:8080/urls/${newShortUrl}`);
-  console.log("Data base ----------------------------->>>", urlDatabase);
 });
 
 // delete a tiny url from database ---->>>>>
@@ -203,15 +187,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // edit a tiny url from database ---->>>>>
 app.post("/urls/:shortURL/edit", (req, res) => {
   let shortUrl = req.params.shortURL;
-  console.log('Edit: ', req.params.shortURL);
+  console.log('short url in edit tab ----->>', shortUrl)
   res.redirect(`/urls/${shortUrl}`);
-
 });
 
 
 // update button on the tine url show page ----->>>>
 app.post("/urls/:shortURL/update", (req, res) => {
-  let longUrl = req.body.editURL;
+  let longUrl = 'http://' + req.body.editURL;
   urlDatabase[req.params.shortURL].longURL = longUrl;
   res.redirect('/urls');
 });
@@ -223,10 +206,8 @@ app.post("/login", (req, res) => {
   let email = req.body.email;
   let pass = req.body.password;
   const userFound = findUser(email);
-  console.log('userFound', userFound);
 
   if (userFound) {
-    console.log('pass', pass);
     if (bcrypt.compareSync(pass, userFound.password)) {
       req.session.username = userFound.username;
       res.redirect("/urls/new");
@@ -252,8 +233,6 @@ app.post("/urls/register", (req, res) => {
   let userName = req.body.username;
   let email = req.body.email;
   let password = bcrypt.hashSync(req.body.password, 10);
-  //const hashedPassword = bcrypt.hashSync(password, 10);
-  console.log('username: ', userName, 'email: ', email, 'password: ', password);
   //// LOOPING through the emails in server
   for (let user in users) {
     let serverMail = users[user].email;
@@ -273,13 +252,9 @@ app.post("/urls/register", (req, res) => {
   };
   req.session.username = userName;
   res.redirect('/urls/new');
-  console.log('users in database ------->>>>', users);
 });
-
-
 
 
 ///// listen command for port ------>>>>>>>>>
 app.listen(PORT, () => {
-  console.log(`Example app listening to port ${PORT}!`);
 });
