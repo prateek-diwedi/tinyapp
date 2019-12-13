@@ -4,11 +4,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Registration Page"](https://github.com/prateek-diwedi/tinyapp/blob/master/docs/registration-page.png)
+!["Registration Page"](https://github.com/prateek-diwedi/tinyapp/blob/master/docs/registration%20page.png)
 
 !["Urls Page"](https://github.com/prateek-diwedi/tinyapp/blob/master/docs/urls-page.png)
 
-!["Urls Page with 2nd user"](https://github.com/prateek-diwedi/tinyapp/blob/master/docs/urls-page-2.png)
+!["Login Page"](https://github.com/prateek-diwedi/tinyapp/blob/master/docs/login-page.png)
 
 ## Dependencies
 
