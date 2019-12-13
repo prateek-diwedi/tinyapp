@@ -1,10 +1,13 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+require('./helpers');
+///// cookie encriptor  ----->>>>>
+const cookieSession = require('cookie-session');
 
 /// setting cookies ----->>>>
-let cookieParser = require('cookie-parser');
-app.use(cookieParser());
+// let cookieParser = require('cookie-parser');
+// app.use(cookieParser());
 
 // set the view engine to ejs  ****
 app.set('view engine', 'ejs');
@@ -18,6 +21,15 @@ const bcrypt = require('bcrypt');
 
 // users data  *******------->>>>
 const users = {};
+
+//////setting encryption for cookies ----->>>>>>
+app.use(cookieSession({
+  name: 'session',
+  keys: ['hey man! i do not know what should i put here as a key.', 'key 2'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 
 ///// generate randon string function  ------>>>>>
@@ -44,14 +56,14 @@ function findUser(email) {
 //// function to match url with the user id ------->>
 function urlsForUser(id) {
   console.log("what is Id in urlsForUser", id);
- for (let shortURL in urlDatabase) {
-   console.log("shortURL is =>", shortURL);
-   if (urlDatabase[shortURL].username === id) {
-    console.log("username is =>", urlDatabase[shortURL].username); 
-     return urlDatabase[shortURL];
-   }
- }
- return null;
+  for (let shortURL in urlDatabase) {
+    console.log("shortURL is =>", shortURL);
+    if (urlDatabase[shortURL].username === id) {
+      console.log("username is =>", urlDatabase[shortURL].username);
+      return urlDatabase[shortURL];
+    }
+  }
+  return null;
 }
 
 
@@ -59,14 +71,14 @@ function urlsForUser(id) {
 function geturls(id) {
   let urls = {};
   console.log("what is Id in urlsForUser", id);
- for (let shortURL in urlDatabase) {
-   console.log("shortURL is =>", shortURL);
-   if (urlDatabase[shortURL].username === id) {
-    console.log("username is =>", urlDatabase[shortURL].username); 
-     urls[shortURL] = urlDatabase[shortURL];
-   }
- }
- return urls;
+  for (let shortURL in urlDatabase) {
+    console.log("shortURL is =>", shortURL);
+    if (urlDatabase[shortURL].username === id) {
+      console.log("username is =>", urlDatabase[shortURL].username);
+      urls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return urls;
 }
 
 
@@ -88,16 +100,16 @@ app.get("/hello", (req, res) => {
 ///// urls page
 app.get("/urls", (req, res) => {
   //console.log(req.cookies.username);
-  const username = req.cookies.username;
+  const username = req.session.username;
   const geturl = geturls(username);
-  console.log('urls logedin person ----->>>>>> ', geturl)
+  console.log('urls logedin person ----->>>>>> ', geturl);
   let templateVars = {
     urls: geturl,
     // longURL: urlDatabase,
-    username: req.cookies["username"]
+    username: req.session["username"]
   };
     // showing url only if user is signed in ----->>>
-    if (req.cookies["username"] && urlsForUser(username) && urlsForUser(username).username === req.cookies.username) {
+  if (req.session["username"] && urlsForUser(username) && urlsForUser(username).username === req.session.username) {
     longURL = urlsForUser(username).longURL;
     res.render("urls_index", templateVars);
   } else {
@@ -110,10 +122,10 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
     longURL: urlDatabase,
-    username: req.cookies["username"]
+    username: req.session["username"]
   };
-  if (req.cookies["username"]) {
-  res.render("urls_new", templateVars);
+  if (req.session["username"]) {
+    res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
   }
@@ -126,7 +138,7 @@ app.get('/urls.json', (req, res) => {
 app.get('/hell', (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    username: req.session["username"]
   };
   res.send('<html><body>Hello <b>World</b></body></html>\n');
   res.render(templateVars);
@@ -136,7 +148,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    username: req.cookies["username"] };
+    username: req.session["username"] };
     //console.log("what is templatevars", templateVars)
   res.render("urls_show", templateVars);
 });
@@ -153,7 +165,7 @@ app.get("/register", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    username: req.session["username"]
   };
   res.render("sign_up_page", templateVars);
 });
@@ -163,7 +175,7 @@ app.get("/login", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    username: req.session["username"]
   };
   res.render("sign_in", templateVars);
 });
@@ -174,7 +186,7 @@ app.get("/login", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let newShortUrl = generateRandomString(6);
-  const username = req.cookies.username;
+  const username = req.session.username;
   urlDatabase[newShortUrl] = {};
   urlDatabase[newShortUrl].username = username;
   urlDatabase[newShortUrl].longURL = 'http://' + req.body.longURL;
@@ -216,19 +228,19 @@ app.post("/login", (req, res) => {
   if (userFound) {
     console.log('pass', pass);
     if (bcrypt.compareSync(pass, userFound.password)) {
-      res.cookie('username', userFound.username);
+      req.session.username = userFound.username;
       res.redirect("/urls/new");
     } else {
-      res.status(403).send("password no good!!!!")
+      res.status(403).send("password no good!!!!");
     }
   } else { // no user found
-    res.status(403).send("user no findy!")
+    res.status(403).send("user no findy!");
   }
 });
 
 //// logging out ----->>>>>
 app.post("/urls/signout", (req, res) => {
-  res.clearCookie('username');
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -243,14 +255,14 @@ app.post("/urls/register", (req, res) => {
   //const hashedPassword = bcrypt.hashSync(password, 10);
   console.log('username: ', userName, 'email: ', email, 'password: ', password);
   //// LOOPING through the emails in server
-  for (user in users) {
+  for (let user in users) {
     let serverMail = users[user].email;
-    let userExist = users[user].username
+    let userExist = users[user].username;
     if (serverMail === email) {
-      res.status(400).send('Email already exists!!')
-    } 
+      res.status(400).send('Email already exists!!');
+    }
     if (userExist === userName) {
-      res.status(400).send('This cool username is already taken!!! Please try some other name')
+      res.status(400).send('This cool username is already taken!!! Please try some other name');
     }
   }
   ///////  USER INFO ADDING  ------->>>>>>>
@@ -259,7 +271,7 @@ app.post("/urls/register", (req, res) => {
     email: email,
     password: password
   };
-  res.cookie('username', userName);
+  req.session.username = userName;
   res.redirect('/urls/new');
   console.log('users in database ------->>>>', users);
 });
